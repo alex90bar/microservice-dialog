@@ -1,16 +1,16 @@
 spring:
   application:
-    name: microservice-microservice-dialog
+    name: microservice-dialog
 
   cloud:
     kubernetes:
+      enabled: true
       secrets:
         sources:
-          - name: microservice-microservice-dialog
+          - name: microservice-dialog
       config:
         sources:
-          - name: library-core
-          - name: microservice-microservice-dialog
+          - name: microservice-dialog
       reload:
         enabled: true
 

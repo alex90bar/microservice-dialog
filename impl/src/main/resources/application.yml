@@ -1,5 +1,7 @@
 server:
   port: 8080
+  error:
+    include-message: always
 
 spring:
   boot:
@@ -7,17 +9,18 @@ spring:
       client:
         enabled: true
         instance:
-          service-url: http://microservice-microservice-dialog:8080
+          service-url: http://microservice-dialog:8080
 
   liquibase:
-    enabled: false
+    enabled: true
     drop-first: false
     change-log: classpath:database-microservice-dialog-changelog.xml
+    default_schema: dialog
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/skillbox
-    username: microservice-dialog
-    password: microservice-dialog
+    url: jdbc:${DATABASE_URL:postgresql://localhost:5432/skillbox}
+    username: ${USER_DB:microservice-dialog}
+    password: ${PASS_DB:microservice-dialog}
     driverClassName: org.postgresql.Driver
 
   jpa:
@@ -28,5 +31,5 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL10Dialect
         format_sql: true
-        default_schema: microservice-dialog
+        default_schema: dialog
     open-in-view: false

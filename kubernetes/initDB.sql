@@ -1,7 +1,7 @@
 create
-user "microservice-dialog";
+    user "microservice-dialog";
 alter
-user "microservice-dialog" with PASSWORD 'microservice-dialog';
-create schema "microservice-dialog";
+    user "microservice-dialog" with PASSWORD 'microservice-dialog';
+create schema "dialog";
 alter
-schema "microservice-dialog" owner to "microservice-dialog";
+    schema "dialog" owner to "microservice-dialog";

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit name="Default" defaultIncludeChangeLogFile="db/src/main/resources/database-microservice-dialog-changelog.xml">
+        <packages>
+          <package value="ru.skillbox.diplom.group25.microservice.dialog" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
+</project>
