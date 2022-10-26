@@ -1,13 +1,11 @@
 package ru.skillbox.diplom.group25.microservice.dialog.resource;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageDto;
+import org.springframework.web.bind.annotation.RequestParam;
+import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetDialogsRs;
+import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetMessagesRs;
 
 /**
  * DialogResource
@@ -18,11 +16,14 @@ import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageDto;
 @RequestMapping("api/v1/dialogs")
 public interface DialogResource {
 
-  @GetMapping("/{id}/messages")
-  ResponseEntity<Page<MessageDto>> getAllMessages(@PathVariable("id") Long id, Pageable pageable);
+  @GetMapping("/messages")
+  ResponseEntity<GetMessagesRs> getAllMessages(@RequestParam Long interlocutorId,
+                                                    @RequestParam(defaultValue = "0") Integer offset,
+                                                    @RequestParam(defaultValue = "20") Integer itemPerPage);
 
   @GetMapping
-  ResponseEntity<Page<DialogDto>> getAllDialogs(Pageable pageable);
+  ResponseEntity<GetDialogsRs> getAllDialogs(@RequestParam(defaultValue = "0") Integer offset,
+                                            @RequestParam(defaultValue = "20") Integer itemPerPage);
 
 
 

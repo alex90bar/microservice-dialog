@@ -33,14 +33,17 @@ public class DialogEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "time", nullable = false)
-  private ZonedDateTime time;
-
   @Column(name = "author_id", nullable = false)
   private Long authorId;
 
-  @Column(name = "receiver_id", nullable = false)
-  private Long receiverId;
+  @Column(name = "recipient_id", nullable = false)
+  private Long recipientId;
+
+  @Column(name = "last_message")
+  private Long lastMessage;
+
+  @Column(name = "unread_count")
+  private Long unreadCount;
 
   @OneToMany(mappedBy = "dialog")
   private List<MessageEntity> messages;

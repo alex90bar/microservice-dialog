@@ -15,6 +15,8 @@ import ru.skillbox.diplom.group25.microservice.dialog.model.DialogEntity;
 @Repository
 public interface DialogRepository extends JpaRepository<DialogEntity, Long> {
 
-  Page<DialogEntity> findAllByAuthorIdOrReceiverIdOrderByTimeDesc(Long authorId, Long receiverId, Pageable page);
+  Page<DialogEntity> findAllByAuthorIdOrRecipientIdOrderByLastMessageDesc(Long authorId, Long recipientId, Pageable pageable);
+
+  DialogEntity findByAuthorIdAndRecipientId(Long authorId, Long recipientId);
 
 }

@@ -40,8 +40,8 @@ public class MessageEntity {
   @Column(name = "post_text", nullable = false, length = 4096)
   private String messageText;
 
-  @Column(name = "is_delete")
-  private Boolean isDelete;
+  @Column(name = "read_status", nullable = false)
+  private String readStatus;
 
   @ManyToOne
   @JoinColumn(name = "dialog_id", referencedColumnName = "id")
