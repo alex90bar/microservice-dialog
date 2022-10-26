@@ -17,6 +17,18 @@ spring:
     change-log: classpath:database-microservice-dialog-changelog.xml
     default_schema: dialog
 
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost:9092}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+      acks: 1
+
   datasource:
     url: jdbc:${DATABASE_URL:postgresql://localhost:5432/skillbox}
     username: ${USER_DB:microservice-dialog}
@@ -33,3 +45,20 @@ spring:
         format_sql: true
         default_schema: dialog
     open-in-view: false
+
+kafka-topics:
+    topic_test: topic_test
+    streaming_dialogs: streaming_dialogs
+
+kafka-groupId: microservice-dialog
+kafka-concurrency: 5
+kafka-pollTimeout: 2000
+acks-timeout-mseconds: 2000
+pong_interval: 10000
+
+java:
+  concurrent:
+    corePoolSize: 10
+    maximumPoolSize: 20
+    queueCapacity: 200
+    keepAliveSeconds: 60

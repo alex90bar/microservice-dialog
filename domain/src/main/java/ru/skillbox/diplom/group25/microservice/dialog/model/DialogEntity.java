@@ -14,6 +14,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * DialogueEntity
@@ -25,6 +26,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "dialog")
+@ToString
 @RequiredArgsConstructor
 public class DialogEntity {
 

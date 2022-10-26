@@ -1,5 +1,9 @@
 package ru.skillbox.diplom.group25.microservice.dialog.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -7,9 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.diplom.group25.library.core.configuration.TechnicalUserConfig;
 import ru.skillbox.diplom.group25.library.core.util.TokenUtil;
+import ru.skillbox.diplom.group25.microservice.account.client.AccountFeignClient;
 import ru.skillbox.diplom.group25.microservice.account.model.AccountDto;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogMessage;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageDto;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageShortDto;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetDialogsRs;
@@ -37,6 +44,9 @@ public class DialogService {
   private final DialogRepository dialogRepository;
   private final MessageMapper messageMapper;
   private final DialogMapper dialogMapper;
+  private final AccountFeignClient feignClient;
+  private final TechnicalUserConfig technicalUserConfig;
+  private final ObjectMapper objectMapper;
 
   public GetMessagesRs getAllMessages(Long interlocutorId, Integer offset, Integer itemPerPage) {
     log.info("getAllMessages begins, interlocutorId: {}", interlocutorId);
@@ -62,6 +72,7 @@ public class DialogService {
     response.setTotal(data.size());
     response.setOffset(offset);
     response.setPerPage(itemPerPage);
+    response.setTimestamp(ZonedDateTime.now().toEpochSecond());
     return response;
   }
 
@@ -75,12 +86,21 @@ public class DialogService {
     PageRequest request = PageRequest.of(offset, itemPerPage);
 
     List<DialogDto> data = dialogRepository.findAllByAuthorIdOrRecipientIdOrderByLastMessageDesc(userId, userId, request).map(dialog -> {
-//      Long conversationPartner = dialog.getAuthorId().equals(userId) ? dialog.getRecipientId() : dialog.getAuthorId();
+      Long conversationPartner = dialog.getAuthorId().equals(userId) ? dialog.getRecipientId() : dialog.getAuthorId();
+
+      PageRequest pageRequest = PageRequest.of(0, 100);
+      final AccountDto[] accountDto = new AccountDto[1];
+
+      technicalUserConfig.executeByTechnicalUser(() -> accountDto[0] = feignClient.getAllAccounts(pageRequest).getBody().stream()
+          .filter(acc -> acc.getId().equals(conversationPartner))
+          .findFirst()
+          .orElse(new AccountDto()));
+
       MessageDto lastMessage = messageMapper.toDto(dialog.getMessages().stream().max(Comparator.comparing(MessageEntity::getId)).orElse(new MessageEntity()));
       Long recipientId = lastMessage.getAuthorId().equals(dialog.getAuthorId()) ? dialog.getRecipientId() : dialog.getAuthorId();
       lastMessage.setRecipientId(recipientId);
-      AccountDto conversationPartner = new AccountDto();
-      return dialogMapper.toDto(dialog, conversationPartner, lastMessage);
+
+      return dialogMapper.toDto(dialog, accountDto[0], lastMessage);
     }).getContent();
 
     response.setTotal(data.size());
@@ -88,11 +108,41 @@ public class DialogService {
     response.setCurrentUserId(userId);
     response.setOffset(offset);
     response.setPerPage(itemPerPage);
+    response.setTimestamp(ZonedDateTime.now().toEpochSecond());
     return response;
   }
 
 
+  public void saveMessage(JsonNode message) {
+    log.info("saveMessage begins");
 
+    DialogMessage dialogMessage;
+
+    try {
+      dialogMessage = objectMapper.treeToValue(message, DialogMessage.class);
+    } catch (JsonProcessingException e) {
+      log.error("Error reading message: {}", e.getMessage());
+      return;
+    }
+
+    DialogEntity dialog = dialogRepository.findByAuthorIdAndRecipientId(dialogMessage.getData().getAuthorId(), dialogMessage.getData().getRecipientId());
+
+    if (dialog == null) {
+      dialog = dialogRepository.findByAuthorIdAndRecipientId(dialogMessage.getData().getRecipientId(), dialogMessage.getData().getAuthorId());
+
+      if (dialog == null) {
+        log.error("Error while finding dialog");
+        return;
+
+      }
+    }
+
+    log.info("Dialog founded: {}", dialog);
+
+    dialog.setLastMessage(messageRepository.save(messageMapper.toEntity(dialogMessage.getData(), dialog)).getId());
+
+    log.info("saveMessage ends");
+  }
 }
 
 
