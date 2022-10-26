@@ -26,7 +26,7 @@ public class GetMessagesRs {
     private String error;
 
     @Schema(description = "Описание ошибки", example = "Неверный код авторизации")
-    @JsonProperty(value = "error_description")
+//    @JsonProperty(value = "error_description")
     private String errorDescription;
 
     @Schema(description = "Метка времени", example = "1644234125")
@@ -39,7 +39,7 @@ public class GetMessagesRs {
     private Integer offset;
 
     @Schema(description = "Количество сообщений диалога на страницу", example = "20")
-    @JsonProperty(value = "per_page")
+//    @JsonProperty(value = "per_page")
     private Integer perPage;
 
     @Schema(description = "Список сообщений диалога")

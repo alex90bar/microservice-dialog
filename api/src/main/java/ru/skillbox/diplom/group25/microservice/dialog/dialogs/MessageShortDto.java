@@ -19,13 +19,13 @@ public class MessageShortDto {
     private Long id;
 
     @Schema(description = "Id автора сообщения")
-    @JsonProperty(value = "author_id")
+//    @JsonProperty(value = "author_id")
     private Long authorId;
 
     @Schema(description = "Дата и время отправки", example = "1464612365")
     private Long time;
 
     @Schema(description = "Текст сообщения", example = "Сообщение")
-    @JsonProperty(value = "message_text")
+//    @JsonProperty(value = "message_text")
     private String messageText;
 }

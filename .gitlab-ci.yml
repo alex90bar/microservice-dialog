@@ -34,7 +34,6 @@ build_deploy_nexus:
     - master
     - develop
     - cicd
-    - test_branch
   except:
     - tags
   script:
