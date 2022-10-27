@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.ToString.Exclude;
 
 /**
  * DialogueEntity
@@ -48,6 +49,7 @@ public class DialogEntity {
   private Long unreadCount;
 
   @OneToMany(mappedBy = "dialog")
+  @Exclude
   private List<MessageEntity> messages;
 
 

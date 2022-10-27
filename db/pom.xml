@@ -32,7 +32,7 @@
         <profile>
             <id>liquibase</id>
             <properties>
-                <liquibase.changeLogFile>src/main/resources/database-post-changelog.xml
+                <liquibase.changeLogFile>src/main/resources/database-microservice-dialog-changelog.xml
                 </liquibase.changeLogFile>
             </properties>
             <build>

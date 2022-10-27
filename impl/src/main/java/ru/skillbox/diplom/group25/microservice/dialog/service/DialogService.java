@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -58,9 +59,25 @@ public class DialogService {
     if (dialog == null) {
       dialog = dialogRepository.findByAuthorIdAndRecipientId(interlocutorId, userId);
 
+      //Если диалог не найден в БД = создаем новый диалог
       if (dialog == null) {
-        return new GetMessagesRs();
+        dialog = new DialogEntity();
+        dialog.setAuthorId(userId);
+        dialog.setRecipientId(interlocutorId);
+        dialog.setUnreadCount(0L);
+        dialogRepository.save(dialog);
 
+        log.info("New dialog created: {}", dialog);
+
+        GetMessagesRs response = new GetMessagesRs();
+        response.setData(new ArrayList<>());
+        response.setTotal(0);
+        response.setOffset(offset);
+        response.setPerPage(itemPerPage);
+        response.setTimestamp(ZonedDateTime.now().toEpochSecond());
+
+        log.info("Returning response: {}", response);
+        return response;
       }
     }
 
@@ -73,6 +90,8 @@ public class DialogService {
     response.setOffset(offset);
     response.setPerPage(itemPerPage);
     response.setTimestamp(ZonedDateTime.now().toEpochSecond());
+
+    log.info("Returning response: {}", response);
     return response;
   }
 

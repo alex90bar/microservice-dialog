@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageShortDto;
 
@@ -15,8 +17,10 @@ import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageShortDto;
  *
  * @author Sergey Olshevskiy
  */
+
 @Getter
 @Setter
+@ToString
 @Accessors(chain = true)
 @JsonInclude(Include.NON_NULL)
 @Schema(description = "Ответ на запрос получения списка сообщений в диалоге")
