@@ -115,7 +115,13 @@ public class DialogService {
           .findFirst()
           .orElse(new AccountDto()));
 
-      MessageDto lastMessage = messageMapper.toDto(dialog.getMessages().stream().max(Comparator.comparing(MessageEntity::getId)).orElse(new MessageEntity()));
+      //если диалог пустой - последнее сообщение не возвращаем
+      MessageEntity entity = dialog.getMessages().stream().max(Comparator.comparing(MessageEntity::getId)).orElse(null);
+      if (entity == null){
+        return dialogMapper.toDto(dialog, accountDto[0], new MessageDto());
+      }
+
+      MessageDto lastMessage = messageMapper.toDto(entity);
       Long recipientId = lastMessage.getAuthorId().equals(dialog.getAuthorId()) ? dialog.getRecipientId() : dialog.getAuthorId();
       lastMessage.setRecipientId(recipientId);
 
