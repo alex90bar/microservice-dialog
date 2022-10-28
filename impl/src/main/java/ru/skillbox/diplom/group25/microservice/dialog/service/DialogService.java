@@ -86,7 +86,22 @@ public class DialogService {
 
     GetMessagesRs response = new GetMessagesRs();
     PageRequest request = PageRequest.of(offset, itemPerPage);
-    List<MessageShortDto> data = messageRepository.findMessageEntitiesByDialog_IdOrderByTimeDesc(dialog.getId(), request).map(messageMapper::toShortDto).getContent();
+    final Long[] readCount = {0L};
+    List<MessageShortDto> data = messageRepository.findMessageEntitiesByDialog_IdOrderByTimeDesc(dialog.getId(), request).map(entity -> {
+
+      //Меняем статус сообщения на прочитанное, если автор сообщения не текущий юзер
+      if (entity.getReadStatus().equals("SENT") && !entity.getAuthorId().equals(userId)){
+        entity.setReadStatus("READ");
+        readCount[0]++;
+      }
+
+      return messageMapper.toShortDto(entity);
+
+        }).getContent();
+
+    //Пересчитываем количество непрочитанных сообщений диалога
+    log.info("Messages changed from unread to read: {}", readCount[0]);
+    dialog.setUnreadCount(dialog.getUnreadCount() - readCount[0]);
 
     response.setData(data);
     response.setTotal(data.size());
