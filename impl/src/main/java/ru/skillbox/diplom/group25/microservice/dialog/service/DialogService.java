@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -20,8 +21,10 @@ import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogDto;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogMessage;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageDto;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageShortDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dialogs.UnreadCountDto;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetDialogsRs;
 import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetMessagesRs;
+import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.UnreadCountRs;
 import ru.skillbox.diplom.group25.microservice.dialog.mapper.DialogMapper;
 import ru.skillbox.diplom.group25.microservice.dialog.mapper.MessageMapper;
 import ru.skillbox.diplom.group25.microservice.dialog.model.DialogEntity;
@@ -89,6 +92,24 @@ public class DialogService {
     response.setTotal(data.size());
     response.setOffset(offset);
     response.setPerPage(itemPerPage);
+    response.setTimestamp(ZonedDateTime.now().toEpochSecond());
+
+    log.info("Returning response: {}", response);
+    return response;
+  }
+
+  public UnreadCountRs getUnreadMessageCount() {
+    log.info("getUnreadMessageCount begins");
+
+    Long userId = TokenUtil.getJwtInfo().getId();
+
+    UnreadCountRs response = new UnreadCountRs();
+
+    Long unreadCount = dialogRepository.findAllByAuthorIdOrRecipientId(userId, userId).stream()
+        .map(DialogEntity::getUnreadCount)
+        .collect(Collectors.summarizingLong(Long::longValue)).getSum();
+
+    response.setData(new UnreadCountDto(unreadCount));
     response.setTimestamp(ZonedDateTime.now().toEpochSecond());
 
     log.info("Returning response: {}", response);
@@ -164,10 +185,12 @@ public class DialogService {
 
     log.info("Dialog founded: {}", dialog);
 
+    dialog.setUnreadCount(dialog.getUnreadCount() + 1);
     dialog.setLastMessage(messageRepository.save(messageMapper.toEntity(dialogMessage.getData(), dialog)).getId());
 
     log.info("saveMessage ends");
   }
+
 }
 
 
