@@ -48,7 +48,7 @@ public class DialogEntity {
   @Column(name = "unread_count_author")
   private Long unreadCountAuthor;
 
-  @Column(name = "unread_count_author")
+  @Column(name = "unread_count_recipient")
   private Long unreadCountRecipient;
 
   @OneToMany(mappedBy = "dialog")
