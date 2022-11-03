@@ -26,7 +26,8 @@ public interface DialogMapper {
   @Mapping(target = "conversationPartner", source = "conversationPartner")
   @Mapping(target = "id", source = "entity.id")
   @Mapping(target = "lastMessage", source = "lastMessage")
-  DialogDto toDto(DialogEntity entity, AccountDto conversationPartner, MessageDto lastMessage);
+  @Mapping(target = "unreadCount", source = "unreadCount")
+  DialogDto toDto(DialogEntity entity, AccountDto conversationPartner, MessageDto lastMessage, Long unreadCount);
 
 
 

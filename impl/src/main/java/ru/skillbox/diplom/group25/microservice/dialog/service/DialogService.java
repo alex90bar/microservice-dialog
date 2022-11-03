@@ -52,6 +52,9 @@ public class DialogService {
   private final TechnicalUserConfig technicalUserConfig;
   private final ObjectMapper objectMapper;
 
+  /**
+   * Метод получения сообщений диалога
+   */
   public GetMessagesRs getAllMessages(Long interlocutorId, Integer offset, Integer itemPerPage) {
     log.info("getAllMessages begins, interlocutorId: {}", interlocutorId);
 
@@ -67,7 +70,8 @@ public class DialogService {
         dialog = new DialogEntity();
         dialog.setAuthorId(userId);
         dialog.setRecipientId(interlocutorId);
-        dialog.setUnreadCount(0L);
+        dialog.setUnreadCountRecipient(0L);
+        dialog.setUnreadCountAuthor(0L);
         dialogRepository.save(dialog);
 
         log.info("New dialog created: {}", dialog);
@@ -90,18 +94,23 @@ public class DialogService {
     List<MessageShortDto> data = messageRepository.findMessageEntitiesByDialog_IdOrderByTimeDesc(dialog.getId(), request).map(entity -> {
 
       //Меняем статус сообщения на прочитанное, если автор сообщения не текущий юзер
-      if (entity.getReadStatus().equals("SENT") && !entity.getAuthorId().equals(userId)){
+      if (entity.getReadStatus().equals("SENT") && !entity.getAuthorId().equals(userId)) {
         entity.setReadStatus("READ");
         readCount[0]++;
       }
 
       return messageMapper.toShortDto(entity);
 
-        }).getContent();
+    }).getContent();
 
     //Пересчитываем количество непрочитанных сообщений диалога
     log.info("Messages changed from unread to read: {}", readCount[0]);
-    dialog.setUnreadCount(dialog.getUnreadCount() - readCount[0]);
+
+    if (dialog.getAuthorId().equals(userId)){
+      dialog.setUnreadCountAuthor(dialog.getUnreadCountAuthor() - readCount[0]);
+    } else {
+      dialog.setUnreadCountRecipient(dialog.getUnreadCountRecipient() - readCount[0]);
+    }
 
     response.setData(data);
     response.setTotal(data.size());
@@ -113,6 +122,9 @@ public class DialogService {
     return response;
   }
 
+  /**
+   * Метод получения количества всех непрочитанных сообщений диалогов
+   */
   public UnreadCountRs getUnreadMessageCount() {
     log.info("getUnreadMessageCount begins");
 
@@ -120,8 +132,9 @@ public class DialogService {
 
     UnreadCountRs response = new UnreadCountRs();
 
+    //находим все диалоги пользователя, суммируем количество непрочитанных
     Long unreadCount = dialogRepository.findAllByAuthorIdOrRecipientId(userId, userId).stream()
-        .map(DialogEntity::getUnreadCount)
+        .map(dialog -> dialog.getAuthorId().equals(userId) ? dialog.getUnreadCountAuthor() : dialog.getUnreadCountRecipient())
         .collect(Collectors.summarizingLong(Long::longValue)).getSum();
 
     response.setData(new UnreadCountDto(unreadCount));
@@ -131,6 +144,9 @@ public class DialogService {
     return response;
   }
 
+  /**
+   * Метод получения всех диалогов пользователя
+   */
   public GetDialogsRs getAllDialogs(Integer offset, Integer itemPerPage) {
     log.info("getAllDialogs begins");
 
@@ -153,15 +169,17 @@ public class DialogService {
 
       //если диалог пустой - последнее сообщение не возвращаем
       MessageEntity entity = dialog.getMessages().stream().max(Comparator.comparing(MessageEntity::getId)).orElse(null);
-      if (entity == null){
-        return dialogMapper.toDto(dialog, accountDto[0], new MessageDto());
+      if (entity == null) {
+        return dialogMapper.toDto(dialog, accountDto[0], new MessageDto(), 0L);
       }
 
       MessageDto lastMessage = messageMapper.toDto(entity);
       Long recipientId = lastMessage.getAuthorId().equals(dialog.getAuthorId()) ? dialog.getRecipientId() : dialog.getAuthorId();
       lastMessage.setRecipientId(recipientId);
 
-      return dialogMapper.toDto(dialog, accountDto[0], lastMessage);
+      Long unreadCount = dialog.getAuthorId().equals(userId) ? dialog.getUnreadCountAuthor() : dialog.getUnreadCountRecipient();
+
+      return dialogMapper.toDto(dialog, accountDto[0], lastMessage, unreadCount);
     }).getContent();
 
     response.setTotal(data.size());
@@ -173,38 +191,58 @@ public class DialogService {
     return response;
   }
 
-
+  /**
+   * Метод сохранения сообщения, полученного по kafka от microservice-streaming
+   */
   public void saveMessage(JsonNode message) {
     log.info("saveMessage begins");
 
-    DialogMessage dialogMessage;
+    DialogMessage dialogMessage = mapJsonToDialogMessage(message);
 
-    try {
-      dialogMessage = objectMapper.treeToValue(message, DialogMessage.class);
-    } catch (JsonProcessingException e) {
-      log.error("Error reading message: {}", e.getMessage());
-      return;
-    }
+    if (dialogMessage != null){
 
-    DialogEntity dialog = dialogRepository.findByAuthorIdAndRecipientId(dialogMessage.getData().getAuthorId(), dialogMessage.getData().getRecipientId());
-
-    if (dialog == null) {
-      dialog = dialogRepository.findByAuthorIdAndRecipientId(dialogMessage.getData().getRecipientId(), dialogMessage.getData().getAuthorId());
+      //находим необходимый диалог в БД
+      DialogEntity dialog = dialogRepository
+          .findByAuthorIdAndRecipientId(dialogMessage.getData().getAuthorId(), dialogMessage.getData().getRecipientId());
 
       if (dialog == null) {
-        log.error("Error while finding dialog");
-        return;
+        dialog = dialogRepository.findByAuthorIdAndRecipientId(dialogMessage.getData().getRecipientId(), dialogMessage.getData().getAuthorId());
 
+        if (dialog == null) {
+          log.error("Error while finding dialog");
+          return;
+
+        }
       }
+
+      log.info("Dialog founded: {}", dialog);
+
+      //пересчитываем количество непрочитанных и устанавливаем последнее сообщение для диалога
+      if (dialogMessage.getData().getAuthorId().equals(dialog.getAuthorId())) {
+        dialog.setUnreadCountRecipient(dialog.getUnreadCountRecipient() + 1);
+      } else {
+        dialog.setUnreadCountAuthor(dialog.getUnreadCountAuthor() + 1);
+      }
+
+      dialog.setLastMessage(messageRepository.save(messageMapper.toEntity(dialogMessage.getData(), dialog)).getId());
     }
-
-    log.info("Dialog founded: {}", dialog);
-
-    dialog.setUnreadCount(dialog.getUnreadCount() + 1);
-    dialog.setLastMessage(messageRepository.save(messageMapper.toEntity(dialogMessage.getData(), dialog)).getId());
 
     log.info("saveMessage ends");
   }
+
+  /**
+   * Метод преобразования сообщения из JsonNode в объект DialogMessage
+   */
+  private DialogMessage mapJsonToDialogMessage(JsonNode message) {
+
+    try {
+      return objectMapper.treeToValue(message, DialogMessage.class);
+    } catch (JsonProcessingException e) {
+      log.error("Error reading message: {}", e.getMessage());
+      return null;
+    }
+  }
+
 
 }
 

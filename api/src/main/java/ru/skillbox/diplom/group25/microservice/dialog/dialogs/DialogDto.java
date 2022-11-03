@@ -21,13 +21,11 @@ public class DialogDto {
     private Long id;
 
     @Schema(description = "Количество непрочитанных сообщений диалога", example = "10")
-//    @JsonProperty(value = "unread_count")
     private Long unreadCount;
 
     @Schema(description = "Собеседник")
     private AccountDto conversationPartner;
 
     @Schema(description = "Последнее сообщение диалога")
-//    @JsonProperty(value = "last_message")
     private MessageDto lastMessage;
 }
