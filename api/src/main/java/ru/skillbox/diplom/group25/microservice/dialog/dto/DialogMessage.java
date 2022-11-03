@@ -1,4 +1,4 @@
-package ru.skillbox.diplom.group25.microservice.dialog.dialogs;
+package ru.skillbox.diplom.group25.microservice.dialog.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

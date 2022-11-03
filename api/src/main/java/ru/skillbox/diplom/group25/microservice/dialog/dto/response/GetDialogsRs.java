@@ -1,14 +1,13 @@
-package ru.skillbox.diplom.group25.microservice.dialog.dialogs.response;
+package ru.skillbox.diplom.group25.microservice.dialog.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import java.util.List;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogDto;
 
 /**
  * GetDialogsRs
@@ -39,11 +38,9 @@ public class GetDialogsRs {
     private Integer offset;
 
     @Schema(description = "Количество диалогов пользователя на страницу", example = "20")
-//    @JsonProperty(value = "per_page")
     private Integer perPage;
 
     @Schema(description = "Id текущего пользователя", example = "55")
-//    @JsonProperty(value = "current_user_id")
     private Long currentUserId;
 
     @Schema(description = "Список диалогов пользователя")

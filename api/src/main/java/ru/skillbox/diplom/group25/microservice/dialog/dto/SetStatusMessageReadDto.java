@@ -1,4 +1,4 @@
-package ru.skillbox.diplom.group25.microservice.dialog.dialogs;
+package ru.skillbox.diplom.group25.microservice.dialog.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

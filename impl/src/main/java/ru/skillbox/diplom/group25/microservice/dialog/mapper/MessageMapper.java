@@ -3,14 +3,11 @@ package ru.skillbox.diplom.group25.microservice.dialog.mapper;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogMessageDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageShortDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogMessageDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageShortDto;
 import ru.skillbox.diplom.group25.microservice.dialog.model.DialogEntity;
 import ru.skillbox.diplom.group25.microservice.dialog.model.MessageEntity;
 

@@ -1,6 +1,5 @@
-package ru.skillbox.diplom.group25.microservice.dialog.dialogs;
+package ru.skillbox.diplom.group25.microservice.dialog.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,15 +23,12 @@ public class MessageDto {
     private Long time;
 
     @Schema(description = "Id автора сообщения", example = "5")
-//    @JsonProperty(value = "author_id")
     private Long authorId;
 
     @Schema(description = "Id получателя сообщения", example = "8")
-//    @JsonProperty(value = "recipient_id")
     private Long recipientId;
 
     @Schema(description = "Текст сообщения", example = "Сообщение")
-//    @JsonProperty(value = "message_text")
     private String messageText;
 
     @Schema(description = "Статус прочтения", example = "SENT")

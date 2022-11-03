@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.skillbox.diplom.group25.microservice.account.model.AccountDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageDto;
 import ru.skillbox.diplom.group25.microservice.dialog.model.DialogEntity;
 
 /**

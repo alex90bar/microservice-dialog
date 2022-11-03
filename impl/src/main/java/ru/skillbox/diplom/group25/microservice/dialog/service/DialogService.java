@@ -17,14 +17,16 @@ import ru.skillbox.diplom.group25.library.core.configuration.TechnicalUserConfig
 import ru.skillbox.diplom.group25.library.core.util.TokenUtil;
 import ru.skillbox.diplom.group25.microservice.account.client.AccountFeignClient;
 import ru.skillbox.diplom.group25.microservice.account.model.AccountDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.DialogMessage;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.MessageShortDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.UnreadCountDto;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetDialogsRs;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.GetMessagesRs;
-import ru.skillbox.diplom.group25.microservice.dialog.dialogs.response.UnreadCountRs;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogMessage;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.MessageShortDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.SetStatusMessageReadDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.UnreadCountDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.response.GetDialogsRs;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.response.GetMessagesRs;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.response.SetStatusMessageReadRs;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.response.UnreadCountRs;
 import ru.skillbox.diplom.group25.microservice.dialog.mapper.DialogMapper;
 import ru.skillbox.diplom.group25.microservice.dialog.mapper.MessageMapper;
 import ru.skillbox.diplom.group25.microservice.dialog.model.DialogEntity;
@@ -55,21 +57,21 @@ public class DialogService {
   /**
    * Метод получения сообщений диалога
    */
-  public GetMessagesRs getAllMessages(Long interlocutorId, Integer offset, Integer itemPerPage) {
-    log.info("getAllMessages begins, interlocutorId: {}", interlocutorId);
+  public GetMessagesRs getAllMessages(Long companionId, Integer offset, Integer itemPerPage) {
+    log.info("getAllMessages begins, companionId: {}", companionId);
 
     Long userId = TokenUtil.getJwtInfo().getId();
 
-    DialogEntity dialog = dialogRepository.findByAuthorIdAndRecipientId(userId, interlocutorId);
+    DialogEntity dialog = dialogRepository.findByAuthorIdAndRecipientId(userId, companionId);
 
     if (dialog == null) {
-      dialog = dialogRepository.findByAuthorIdAndRecipientId(interlocutorId, userId);
+      dialog = dialogRepository.findByAuthorIdAndRecipientId(companionId, userId);
 
       //Если диалог не найден в БД = создаем новый диалог
       if (dialog == null) {
         dialog = new DialogEntity();
         dialog.setAuthorId(userId);
-        dialog.setRecipientId(interlocutorId);
+        dialog.setRecipientId(companionId);
         dialog.setUnreadCountRecipient(0L);
         dialog.setUnreadCountAuthor(0L);
         dialogRepository.save(dialog);
@@ -188,6 +190,20 @@ public class DialogService {
     response.setOffset(offset);
     response.setPerPage(itemPerPage);
     response.setTimestamp(ZonedDateTime.now().toEpochSecond());
+    return response;
+  }
+
+  /**
+   * Метод для перевода статуса сообщения в прочитанное
+   */
+  public SetStatusMessageReadRs setStatusMessageRead(Long companionId) {
+    log.info("setStatusMessageRead begins");
+    getAllMessages(companionId, 0, 100);
+
+    log.info("setStatusMessageRead ends");
+    SetStatusMessageReadRs response = new SetStatusMessageReadRs();
+    response.setTimestamp(ZonedDateTime.now().toEpochSecond());
+    response.setData(new SetStatusMessageReadDto("Ок"));
     return response;
   }
 
