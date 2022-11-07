@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.DialogMessage;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.NotificationInputDto;
+import ru.skillbox.diplom.group25.microservice.dialog.dto.NotificationType;
 
 /**
  * KafkaService
@@ -25,6 +28,8 @@ public class KafkaService {
 
   @Value(value = "${kafka-topics.dialogs_streaming}")
   private String topicDialogsStreaming;
+  @Value(value = "${kafka-topics.notifications}")
+  private String topicNotification;
 
 
   @Async("taskExecutor")
@@ -37,6 +42,23 @@ public class KafkaService {
 
     //Отправляем в стриминг уведомление о получении сообщения и сохранения его в БД
     kafkaSender.sendMessage(topicDialogsStreaming, "Message received and saved to DB", myRecord.value());
+
+    //Отправляем нотификацию о сообщении в microservice-notification
+    DialogMessage dialogMessage = dialogService.mapJsonToDialogMessage(myRecord.value());
+
+    if (dialogMessage != null){
+      String textMessage = dialogMessage.getData().getMessageText();
+
+      String content = textMessage.length() > 20 ? textMessage.substring(0, 20) + "..." : textMessage;
+
+      NotificationInputDto notification = new NotificationInputDto(dialogMessage.getData().getAuthorId(), dialogMessage.getData().getRecipientId(),
+          NotificationType.MESSAGE, content);
+
+      kafkaSender.sendMessage(topicNotification, "New message notification", notification);
+    }
+
+
+
 
   }
 

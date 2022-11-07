@@ -249,7 +249,7 @@ public class DialogService {
   /**
    * Метод преобразования сообщения из JsonNode в объект DialogMessage
    */
-  private DialogMessage mapJsonToDialogMessage(JsonNode message) {
+  public DialogMessage mapJsonToDialogMessage(JsonNode message) {
 
     try {
       return objectMapper.treeToValue(message, DialogMessage.class);

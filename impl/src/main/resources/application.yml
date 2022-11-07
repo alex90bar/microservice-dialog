@@ -50,6 +50,7 @@ kafka-topics:
     topic_test: topic_test
     streaming_dialogs: streaming_dialogs
     dialogs_streaming: dialogs_streaming
+    notifications: notifications
 
 kafka-groupId: microservice-dialog
 kafka-concurrency: 5
